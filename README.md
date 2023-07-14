@@ -7,7 +7,11 @@ Imitation learning driving policy network federating on Flower
 
 # Requirements
 Python=3.10
+
+Example:
 ```
+conda create -n fldemo python=3.10 -y
+conda activate fldemo
 pip install -r requirements.txt
 ```
 
@@ -24,3 +28,4 @@ You can quickly simulate the federated learning on your environment with:
 ```
 python simulation.py
 ```
+
