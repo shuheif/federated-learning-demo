@@ -1,12 +1,12 @@
 #!/bin/bash
 
 echo "Starting server"
-python server.py &
+python server.py --ckpt_path ./init_weights.ckpt &
 sleep 3 # Sleep for 3s to give the server enough time to start
 
 for i in `seq 0 1`; do
     echo "Starting client $i"
-    python client.py --client_id $i &
+    python client.py --client_id $i --data_dir ./data --seed $i &
 done
 
 # This will allow you to use CTRL+C to stop all background processes

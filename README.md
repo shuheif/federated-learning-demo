@@ -15,17 +15,29 @@ conda activate fldemo
 pip install -r requirements.txt
 ```
 
-# Dataset
-RGB images and driving parameters generated in CARLA simulator
+# Run as a Server
+1. Download the initial model weights here:
+https://drive.google.com/file/d/1MOJl0HcsvWVgzmGFDNKfa2Dfdr9bBTGD/view?usp=drive_link
 
-You can download our test dataset here:
+1. Run the command below to start the server:
+```
+python server.py --ckpt_path ./init_weights.ckpt
+```
+
+# Run as a Client
+1. Place your own dataset under ./data or download our test dataset below. The dataset should consist of RGB images and a csv file of driving parameters generated in CARLA simulator.
 https://drive.google.com/file/d/1YVivo12uK7dW-XEyUjslbUND2cQuN5gx/view?usp=drive_link
 
-Once downloaded, make sure to insert the path to your dataset folder in the code as DATA_DIR parameter
+1. Make sure that the server is running.
 
-# Test Run
+1. Run the command below to start a client:
+```
+python client.py --data_dir ./data
+```
+
+# Run a Simulation
 You can quickly simulate the federated learning on your environment with:
 ```
-python simulation.py
+./run.sh
 ```
 
