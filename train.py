@@ -5,13 +5,11 @@ from torchvision.models import resnet18, ResNet18_Weights
 from utils import cross_entropy_for_onehot
 
 NUM_CLASSES = 4
-DATA_DIR = '' # Insert path to your dataset here
-
 
 class ResNetClassifier(LightningModule):
-    def __init__(self, pretrained: bool=True):
+    def __init__(self, weights=None):
         super().__init__()
-        self.resnet = resnet18(weights=ResNet18_Weights.DEFAULT if pretrained else None)
+        self.resnet = resnet18(weights=weights)
         self.resnet.fc = nn.Linear(self.resnet.fc.in_features, NUM_CLASSES)
         self.loss_module = cross_entropy_for_onehot
 
@@ -43,11 +41,15 @@ class ResNetClassifier(LightningModule):
 
 
 if __name__ == "__main__":
+    import argparse
     from data_module import DrivingDataModule
-    data_module = DrivingDataModule(data_dir=DATA_DIR, batch_size=16)
+    parser = argparse.ArgumentParser(description="Train ResNetClassifier")
+    parser.add_argument("--data_dir", type=str)
+    args = parser.parse_args()
+    data_module = DrivingDataModule(data_dir=args.data_dir, batch_size=16)
     data_module.setup()
     train_loader, val_loader, test_loader = data_module.get_data_loaders()
-    model = ResNetClassifier(pretrained=True)
-    trainer = Trainer(max_epochs=3, fast_dev_run=True, accelerator="auto")
+    model = ResNetClassifier(weights=ResNet18_Weights.DEFAULT)
+    trainer = Trainer(max_epochs=1, fast_dev_run=True, accelerator="auto")
     trainer.fit(model, train_loader, val_loader)
     trainer.test(model=model, dataloaders=test_loader)

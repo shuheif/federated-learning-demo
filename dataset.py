@@ -7,8 +7,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-DATA_DIR = '' # Insert path to your dataset here
-
 
 class CarlaDrivingDataset(Dataset):
     def __init__(self, data_dir: str, transform=[]):
@@ -45,7 +43,11 @@ class CarlaDrivingDataset(Dataset):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    dataset = CarlaDrivingDataset(DATA_DIR, transform=[transforms.ToTensor()])
+    import argparse
+    parser = argparse.ArgumentParser(description="Carla Dataset")
+    parser.add_argument("--data_dir", type=str)
+    args = parser.parse_args()
+    dataset = CarlaDrivingDataset(args.data_dir, transform=[transforms.ToTensor()])
     dataloader = DataLoader(dataset, batch_size=1)
     iterator = iter(dataloader)
     X, y = next(iterator)

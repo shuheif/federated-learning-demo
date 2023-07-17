@@ -6,6 +6,7 @@ import numpy as np
 from typing import List, Dict
 import argparse
 from torch import nn
+from pathlib import Path
 
 from train import ResNetClassifier
 from data_module import DrivingDataModule
@@ -32,7 +33,7 @@ class FlowerClient(NumPyClient):
         print(f"[Client {self.client_id}] evaluate, config: {config}")
         self.set_parameters(parameters)
         results = Trainer().validate(self.model, self.test_loader)
-        loss = results[0]["test_loss"]
+        loss = results[0]["val_loss"] if len(results) > 0 else np.nan
         return loss, len(self.test_loader.dataset), {"loss": loss}
 
     def set_parameters(self, parameters: List[np.ndarray]) -> None:
@@ -47,18 +48,23 @@ def _set_parameters(model: nn.Module, parameters) -> None:
     state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
     model.load_state_dict(state_dict, strict=True)
 
-def flower_client_fn(client_id: int, num_clients: int, data_dir: str) -> FlowerClient:
-    data_module = DrivingDataModule(data_dir=data_dir, batch_size=32, client_id=client_id, num_clients=num_clients)
+def flower_client_fn(client_id: int, data_dir: str, num_samples: int, seed: int) -> FlowerClient:
+    data_module = DrivingDataModule(data_dir=data_dir, batch_size=32, client_id=client_id, num_samples=num_samples, seed=seed)
     data_module.setup()
-    resnet_classifier_model = ResNetClassifier(pretrained=True)
+    resnet_classifier_model = ResNetClassifier(weights=None)
     client = FlowerClient(resnet_classifier_model, data_module, client_id)
-    start_numpy_client(server_address="127.0.0.1:8080", client=client)
+    start_numpy_client(
+        server_address="127.0.0.1:8080",
+        client=client,
+        root_certificates=Path(".cache/certificates/ca.crt").read_bytes(),
+    )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flower client")
     parser.add_argument("--client_id", default=0, type=int, help="client id")
-    parser.add_argument("--num_clients", default=2, type=int, help="number of clients")
-    parser.add_argument("--data_dir", type=str)
+    parser.add_argument("--data_dir", type=str, help="path to the dataset")
+    parser.add_argument("--num_samples", default=100, type=int, help="number of images in the client's dataset")
+    parser.add_argument("--seed", default=1234, type=int, help="random gen seed")
     args = parser.parse_args()
-    flower_client_fn(args.client_id, args.num_clients, args.data_dir)
+    flower_client_fn(args.client_id, args.data_dir, args.num_samples, args.seed)

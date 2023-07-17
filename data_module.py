@@ -1,5 +1,6 @@
 from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader, random_split, Subset
+from torch import manual_seed
+from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
 from dataset import CarlaDrivingDataset
@@ -19,7 +20,7 @@ class DrivingDataModule(LightningDataModule):
             num_workers: int=4,
             seed: int=1234,
             client_id: int=0,
-            num_clients: int=2,
+            num_samples: int=100,
         ):
         super().__init__()
         self.batch_size = batch_size
@@ -27,20 +28,18 @@ class DrivingDataModule(LightningDataModule):
         self.test_ratio = test_ratio
         self.val_ratio = val_ratio
         self.num_workers = num_workers
-        self.seed = seed
         self.client_id = int(client_id)
-        self.num_clients = num_clients
+        self.num_samples = num_samples
+        manual_seed(seed)
 
     def setup(self):
         full_dataset = CarlaDrivingDataset(data_dir=self.data_dir, transform=TRANSFORM_CARLA_IMAGES)
         total_size = len(full_dataset)
         test_size = int(total_size * self.test_ratio)
         train_dataset, self.test_dataset = random_split(full_dataset, [total_size - test_size, test_size])
-        train_size_per_client = (total_size - test_size) // self.num_clients
-        train_start_idx = self.client_id * train_size_per_client
-        self.train_dataset = Subset(train_dataset, range(train_start_idx, train_start_idx + train_size_per_client))
-        val_size = int(train_size_per_client * self.val_ratio)
-        _, self.val_dataset = random_split(self.train_dataset, [train_size_per_client - val_size, val_size])
+        self.train_dataset, _ = random_split(train_dataset, [self.num_samples, len(train_dataset) - self.num_samples])
+        val_size = int(self.num_samples * self.val_ratio)
+        self.val_dataset, _ = random_split(self.train_dataset, [val_size, self.num_samples - val_size])
 
     def _get_dataloader(self, dataset, shuffle):
         return DataLoader(dataset, batch_size=self.batch_size, shuffle=shuffle, num_workers=self.num_workers, pin_memory=True)
