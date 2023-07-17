@@ -1,10 +1,6 @@
 # federated-learning-demo
 Imitation learning driving policy network federating on Flower
 
-- network: ResNet18
-- input: an RGB image
-- output: a 4-class driving command as a one-hot vector (forward, stop, left, right)
-
 # Requirements
 Python=3.10
 
