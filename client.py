@@ -48,15 +48,16 @@ def _set_parameters(model: nn.Module, parameters) -> None:
     state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
     model.load_state_dict(state_dict, strict=True)
 
-def flower_client_fn(client_id: int, data_dir: str, num_samples: int, seed: int) -> FlowerClient:
+def flower_client_fn(client_id: int, data_dir: str, num_samples: int, seed: int, server_address: str, enable_ssh: bool) -> FlowerClient:
     data_module = DrivingDataModule(data_dir=data_dir, batch_size=32, client_id=client_id, num_samples=num_samples, seed=seed)
     data_module.setup()
     resnet_classifier_model = ResNetClassifier(weights=None)
     client = FlowerClient(resnet_classifier_model, data_module, client_id)
+    certificates = Path(".cache/certificates/ca.crt").read_bytes() if enable_ssh else None
     start_numpy_client(
-        server_address="127.0.0.1:8080",
+        server_address=server_address,
         client=client,
-        root_certificates=Path(".cache/certificates/ca.crt").read_bytes(),
+        root_certificates=certificates,
     )
 
 
@@ -65,6 +66,8 @@ if __name__ == "__main__":
     parser.add_argument("--client_id", default=0, type=int, help="client id")
     parser.add_argument("--data_dir", type=str, help="path to the dataset")
     parser.add_argument("--num_samples", default=100, type=int, help="number of images in the client's dataset")
-    parser.add_argument("--seed", default=1234, type=int, help="random gen seed")
+    parser.add_argument("--seed", default=1234, type=int, help="for random generator")
+    parser.add_argument("--server_address", default="127.0.0.1:8080", type=str)
+    parser.add_argument("--enable_ssh", type=bool, default=False)
     args = parser.parse_args()
-    flower_client_fn(args.client_id, args.data_dir, args.num_samples, args.seed)
+    flower_client_fn(args.client_id, args.data_dir, args.num_samples, args.seed, args.server_address, args.enable_ssh)
