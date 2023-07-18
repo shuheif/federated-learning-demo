@@ -2,9 +2,10 @@ from pytorch_lightning import LightningModule, Trainer
 from torch import optim, nn
 from torchvision.models import resnet18, ResNet18_Weights
 
-from utils import cross_entropy_for_onehot
+from utils import cross_entropy_for_onehot, accuracy
 
 NUM_CLASSES = 4
+
 
 class ResNetClassifier(LightningModule):
     def __init__(self, weights=None):
@@ -16,19 +17,18 @@ class ResNetClassifier(LightningModule):
     def forward(self, images):
         return self.resnet(images)
     
-    def training_step(self, batch, batch_idx):
+    def _evaluate(self, batch, stage: str=None):
         images, labels = batch
         preds = self.resnet(images)
         loss = self.loss_module(preds, labels)
-        self.log("train_loss", loss)
-        return loss
-    
-    def _evaluate(self, batch, stage: str=None) -> None:
-        images, labels = batch
-        preds = self.resnet(images)
-        loss = self.loss_module(preds, labels)
+        acc = accuracy(preds, labels)
         if stage:
             self.log(f"{stage}_loss", loss, prog_bar=True)
+            self.log(f"{stage}_accuracy", acc[0], prog_bar=True)
+        return loss
+    
+    def training_step(self, batch, batch_idx):
+        return self._evaluate(batch, "train")
     
     def test_step(self, batch, batch_idx) -> None:
         self._evaluate(batch, "test")

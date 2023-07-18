@@ -11,6 +11,10 @@ from pathlib import Path
 from train import ResNetClassifier
 from data_module import DrivingDataModule
 
+import logging
+from flwr.common import logger
+logger.logger.setLevel(logging.DEBUG)
+
 
 class FlowerClient(NumPyClient):
     def __init__(self, model: LightningModule, data_module: LightningDataModule, client_id: int=0):
@@ -23,18 +27,21 @@ class FlowerClient(NumPyClient):
         return _get_parameters(self.model)
 
     def fit(self, parameters, config: Dict):
-        print(f"[Client ID {self.client_id} fit, config: {config}")
+        print(f"[Client ID {self.client_id}] fit")
         self.set_parameters(parameters)
-        trainer = Trainer(max_epochs=1, accelerator="auto")
+        trainer = Trainer(max_epochs=1, accelerator="auto", enable_model_summary=False)
         trainer.fit(self.model, self.train_loader, self.val_loader)
-        return self.get_parameters(config={}), len(self.train_loader.dataset), {}
+        metrics = trainer.callback_metrics
+        return self.get_parameters(config), len(self.train_loader.dataset), {"accuracy": metrics['val_accuracy'].item()}
 
     def evaluate(self, parameters: List[np.ndarray], config: Dict):
-        print(f"[Client {self.client_id}] evaluate, config: {config}")
+        print(f"[Client {self.client_id}] evaluate")
         self.set_parameters(parameters)
-        results = Trainer().validate(self.model, self.test_loader)
-        loss = results[0]["val_loss"] if len(results) > 0 else np.nan
-        return loss, len(self.test_loader.dataset), {"loss": loss}
+        trainer = Trainer(enable_model_summary=False)
+        results = trainer.test(self.model, self.test_loader)
+        loss = results[0]["test_loss"] if len(results) > 0 else np.nan
+        accuracy = results[0]["test_accuracy"] if len(results) > 0 else np.nan
+        return loss, len(self.test_loader.dataset), {"accuracy": accuracy}
 
     def set_parameters(self, parameters: List[np.ndarray]) -> None:
         _set_parameters(self.model, parameters)

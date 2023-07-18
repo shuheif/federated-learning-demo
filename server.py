@@ -1,9 +1,11 @@
-from typing import Dict
+from typing import Dict, List, Tuple
 import flwr as fl
-from flwr.common import ndarrays_to_parameters
+from flwr.common import ndarrays_to_parameters, logger, Metrics
 import torch
 import argparse
 from pathlib import Path
+import logging
+logger.logger.setLevel(logging.DEBUG)
 
 from train import ResNetClassifier
 
@@ -18,6 +20,15 @@ def fit_config(server_round: int) -> Dict[str, str]:
     }
     return config
 
+def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
+    # Multiply accuracy of each client by number of examples used
+    accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics]
+    examples = [num_examples for num_examples, _ in metrics]
+    # Aggregate and return custom metric (weighted average)
+    avg_accuracy = sum(accuracies) / sum(examples)
+    print('avg accuracy', avg_accuracy)
+    return {"avg_accuracy": avg_accuracy}
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flower server")
@@ -31,6 +42,8 @@ if __name__ == "__main__":
         fraction_evaluate=1., # Sample 100% of available clients for evaluation
         on_fit_config_fn=fit_config,
         initial_parameters=model_parameters,
+        fit_metrics_aggregation_fn=weighted_average,
+        evaluate_metrics_aggregation_fn=weighted_average,
     )
     certificates = (
         Path(".cache/certificates/ca.crt").read_bytes(),
@@ -38,7 +51,7 @@ if __name__ == "__main__":
         Path(".cache/certificates/server.key").read_bytes(),
     ) if args.enable_ssh else None
     hist = fl.server.start_server(
-        server_address="127.0.0.1:8080",
+        server_address="localhost:8080",
         config=fl.server.ServerConfig(num_rounds=3),
         strategy=strategy,
         certificates=certificates,
