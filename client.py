@@ -77,4 +77,4 @@ if __name__ == "__main__":
     parser.add_argument("--server", default="127.0.0.1:8080", type=str)
     parser.add_argument("--enable_ssh", type=bool, default=False)
     args = parser.parse_args()
-    flower_client_fn(args.client_id, args.data_dir, args.num_samples, args.seed, args.server_address, args.enable_ssh)
+    flower_client_fn(args.client_id, args.data, args.num_samples, args.seed, args.server_address, args.enable_ssh)
