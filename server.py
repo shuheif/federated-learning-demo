@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("--enable_ssh", type=bool, default=False)
     parser.add_argument("--address", type=str, default="localhost:8080")
     args = parser.parse_args()
-    model = ResNetClassifier.load_from_checkpoint(args.ckpt_path, map_location=DEVICE)
+    model = ResNetClassifier.load_from_checkpoint(args.ckpt, map_location=DEVICE)
     model_parameters = ndarrays_to_parameters(val.cpu().numpy() for _, val in model.state_dict().items())
     strategy = fl.server.strategy.FedAvg(
         fraction_fit=1., # Sample 100% of available clients for training
