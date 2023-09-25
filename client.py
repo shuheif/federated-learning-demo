@@ -71,10 +71,10 @@ def flower_client_fn(client_id: int, data_dir: str, num_samples: int, seed: int,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flower client")
     parser.add_argument("--client_id", default=0, type=int, help="client id")
-    parser.add_argument("--data_dir", type=str, help="path to the dataset")
+    parser.add_argument("--data", type=str, default="data")
     parser.add_argument("--num_samples", default=100, type=int, help="number of images in the client's dataset")
     parser.add_argument("--seed", default=1234, type=int, help="for random generator")
-    parser.add_argument("--server_address", default="127.0.0.1:8080", type=str)
+    parser.add_argument("--server", default="127.0.0.1:8080", type=str)
     parser.add_argument("--enable_ssh", type=bool, default=False)
     args = parser.parse_args()
     flower_client_fn(args.client_id, args.data_dir, args.num_samples, args.seed, args.server_address, args.enable_ssh)
