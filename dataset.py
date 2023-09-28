@@ -2,7 +2,9 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-from .datasets.federated_dataset_jt.federated_dataset_jt import FederatedDataset
+import sys
+sys.path.append('/home/shuhei/Desktop/federated-learning-demo/datasets')
+from datasets.federated_dataset_jt.federated_dataset_jt import FederatedDataset
 
 
 class DrivingDataset(Dataset):
