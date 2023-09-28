@@ -10,7 +10,7 @@ class DrivingDataModule(LightningDataModule):
             self,
             batch_size: int,
             data_dir: str,
-            city: str=["BOS", "SIG"],
+            city: str=["BOS", "SGP"],
             test_ratio: float=.1,
             val_ratio: float=.2,
             num_workers: int=4,
