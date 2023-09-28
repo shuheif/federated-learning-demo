@@ -4,7 +4,7 @@ from torchvision.models import resnet18, ResNet18_Weights
 
 from utils import cross_entropy_for_onehot, accuracy
 
-NUM_CLASSES = 3
+NUM_CLASSES = 4
 
 
 class ResNetClassifier(LightningModule):

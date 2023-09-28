@@ -45,11 +45,11 @@ class DrivingDataset(Dataset):
     
     def _get_one_hot_command(self, command):
         if command == 1:
-            return torch.tensor([1, 0, 0]) # left
+            return torch.tensor([1, 0, 0, 0]) # left
         elif command == 2:
-            return torch.tensor([0, 1, 0]) # forward
+            return torch.tensor([0, 1, 0, 0]) # forward
         else:
-            return torch.tensor([0, 0, 1]) # right
+            return torch.tensor([0, 0, 1, 0]) # right
 
 
 if __name__ == "__main__":
@@ -62,6 +62,7 @@ if __name__ == "__main__":
         train_or_test="train",
         av2_cities=["PIT", "ATX"],
         av2_root=args.data,
+        ns_cities=None,
     )
     print('len(dataset): ', len(dataset))
     dataloader = DataLoader(dataset, batch_size=1)
