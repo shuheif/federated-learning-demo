@@ -3,12 +3,8 @@ from torch import manual_seed
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
-from dataset import CarlaDrivingDataset
+from dataset import DrivingDataset
 
-TRANSFORM_CARLA_IMAGES = [
-    transforms.Resize((32, 32)),
-    transforms.ToTensor(),
-]
 
 class DrivingDataModule(LightningDataModule):
     def __init__(
@@ -20,7 +16,6 @@ class DrivingDataModule(LightningDataModule):
             num_workers: int=4,
             seed: int=1234,
             client_id: int=0,
-            num_samples: int=100,
         ):
         super().__init__()
         self.batch_size = batch_size
@@ -29,17 +24,20 @@ class DrivingDataModule(LightningDataModule):
         self.val_ratio = val_ratio
         self.num_workers = num_workers
         self.client_id = int(client_id)
-        self.num_samples = num_samples
         manual_seed(seed)
 
     def setup(self):
-        full_dataset = CarlaDrivingDataset(data_dir=self.data_dir, transform=TRANSFORM_CARLA_IMAGES)
+        full_dataset = DrivingDataset(
+            train_or_test="train",
+            av2_cities=["PIT", "ATX"],
+            av2_root=self.data_dir,
+        )
         total_size = len(full_dataset)
         test_size = int(total_size * self.test_ratio)
-        train_dataset, self.test_dataset = random_split(full_dataset, [total_size - test_size, test_size])
-        self.train_dataset, _ = random_split(train_dataset, [self.num_samples, len(train_dataset) - self.num_samples])
-        val_size = int(self.num_samples * self.val_ratio)
-        self.val_dataset, _ = random_split(self.train_dataset, [val_size, self.num_samples - val_size])
+        train_size = total_size - test_size
+        self.train_dataset, self.test_dataset = random_split(full_dataset, [train_size, test_size])
+        val_size = int(train_size * self.val_ratio)
+        self.val_dataset, _ = random_split(self.train_dataset, [val_size, train_size - val_size])
 
     def _get_dataloader(self, dataset, shuffle):
         return DataLoader(dataset, batch_size=self.batch_size, shuffle=shuffle, num_workers=self.num_workers, pin_memory=True)
