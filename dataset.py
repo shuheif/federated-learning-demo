@@ -20,7 +20,7 @@ class DrivingDataset(Dataset):
         super().__init__()
         self.dataset = FederatedDataset(
             av2_cities=av2_cities,
-            av2_root='{}/{}'.format(av2_root, train_or_test.lower()),
+            av2_root=av2_root,
             ns_cities=ns_cities,
             ns_train_test=train_or_test.upper(),
             wm_cities=wm_cities,
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dataset = DrivingDataset(
         train_or_test="train",
-        av2_cities=["ATX"],
+        av2_cities=["PIT", "ATX"],
         av2_root=args.data,
     )
     print('len(dataset): ', len(dataset))
