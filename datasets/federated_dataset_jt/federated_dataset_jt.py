@@ -2,7 +2,7 @@ FEDREATED_DATASET_JT_VERSION="v0.1 beta"
 
 
 # from nuscenes_dataset_jt import NuScenesDataset
-from .nuscenes_dataset_jt import NuScenesDataset
+# from .nuscenes_dataset_jt import NuScenesDataset
 from .av2_dataset_jt import AV2Dataset
 from .crop_and_resize import crop_car_and_resize, crop_central_and_resize
 
