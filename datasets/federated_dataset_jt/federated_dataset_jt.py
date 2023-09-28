@@ -8,7 +8,7 @@ from .crop_and_resize import crop_car_and_resize, crop_central_and_resize
 
 
 class FederatedDataset():
-    def __init__(self, av2_cities=None, ns_cities = None, wm_cities=None, av2_root="/data/shared/av2_all/train", ns_train_proportion=0.8, ns_train_test="TRAIN",waymo_train_test="TRAIN", waymo_p=1):
+    def __init__(self, av2_cities=None, ns_cities = None, wm_cities=None, av2_root="/data/shared/av2_all/train", ns_root="/data/jimuyang/nuscenes/", ns_train_proportion=0.8, ns_train_test="TRAIN",waymo_train_test="TRAIN", waymo_p=1):
         if av2_cities is not None:
             self.set_av2(cities=av2_cities, dataset_dir=av2_root)
             # self.set_av2(cities=av2_cities, dataset_dir=av2_root, proportion=0.05)
@@ -17,7 +17,7 @@ class FederatedDataset():
             self.av2_dataset=None
 
         if ns_cities is not None:
-            self.set_nuscenes(cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
+            self.set_nuscenes(data=ns_root, cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
             # self.set_nuscenes(cities=ns_cities, train_or_test=ns_train_test, train_proportion=0.1)
             print("FederatedDataset: There are", len(self.nuscenes_dataset), " ns samples overall. ")
         else:
@@ -55,14 +55,14 @@ class FederatedDataset():
         self.av2_dataset=AV2Dataset(crop_and_resize=crop_and_resize,cities=cities,dataset_dir=dataset_dir,proportion=proportion)
 
 
-    def set_nuscenes(self,cities, random_seed=99,train_or_test="TRAIN",train_proportion=1.0):
+    def set_nuscenes(self,data, cities, random_seed=99,train_or_test="TRAIN",train_proportion=1.0):
         """
         @param cities:
             ['BOS','SGP'] 
             default: empty
 
         """
-        self.nuscenes_dataset=NuScenesDataset(cities=cities,random_seed=random_seed,
+        self.nuscenes_dataset=NuScenesDataset(data=data, cities=cities,random_seed=random_seed,
                                               train_or_test=train_or_test,
                                               train_proportion=train_proportion)
         # print("FederatedDataset: There are",self.__len__(),"samples overall. " )
