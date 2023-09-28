@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train ResNetClassifier")
     parser.add_argument("--data", type=str)
     args = parser.parse_args()
-    data_module = DrivingDataModule(data_dir=args.data, batch_size=16)
+    data_module = DrivingDataModule(data_dir=args.data, batch_size=16, num_workers=1)
     data_module.setup()
     train_loader, val_loader, test_loader = data_module.get_data_loaders()
     model = ResNetClassifier(weights=ResNet18_Weights.DEFAULT)

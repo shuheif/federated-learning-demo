@@ -16,25 +16,27 @@ class FederatedDataset():
         else:
             self.av2_dataset=None
 
-        if ns_cities is not None:
-            self.set_nuscenes(cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
-            # self.set_nuscenes(cities=ns_cities, train_or_test=ns_train_test, train_proportion=0.1)
-            print("FederatedDataset: There are", len(self.nuscenes_dataset), " ns samples overall. ")
-        else:
-            self.nuscenes_dataset = None
+        # if ns_cities is not None:
+        #     self.set_nuscenes(cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
+        #     # self.set_nuscenes(cities=ns_cities, train_or_test=ns_train_test, train_proportion=0.1)
+        #     print("FederatedDataset: There are", len(self.nuscenes_dataset), " ns samples overall. ")
+        # else:
+        #     self.nuscenes_dataset = None
+        self.nuscenes_dataset = None
 
-        if wm_cities is not None:
-            if waymo_train_test == 'TRAIN':
-                self.set_waymo(cities=wm_cities)
-                # self.set_waymo(cities=wm_cities, proportion=0.05)
-                print("FederatedDataset: There are", len(self.waymo_dataset), " ns samples overall. ")
-            else:
-                self.set_waymo(cities=wm_cities,tfrecords_dir="/data/shared/waymo_test", proportion=waymo_p,
-                  images_dir="/home/data/waymo_test")
-                # self.set_waymo(cities=wm_cities, tfrecords_dir="/data/shared/waymo_test", proportion=0.05,
-                #                images_dir="/home/data/waymo_test")
-        else:
-            self.waymo_dataset = None
+        # if wm_cities is not None:
+        #     if waymo_train_test == 'TRAIN':
+        #         self.set_waymo(cities=wm_cities)
+        #         # self.set_waymo(cities=wm_cities, proportion=0.05)
+        #         print("FederatedDataset: There are", len(self.waymo_dataset), " ns samples overall. ")
+        #     else:
+        #         self.set_waymo(cities=wm_cities,tfrecords_dir="/data/shared/waymo_test", proportion=waymo_p,
+        #           images_dir="/home/data/waymo_test")
+        #         # self.set_waymo(cities=wm_cities, tfrecords_dir="/data/shared/waymo_test", proportion=0.05,
+        #         #                images_dir="/home/data/waymo_test")
+        # else:
+        #     self.waymo_dataset = None
+        self.waymo_dataset
 
 
 
