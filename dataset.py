@@ -1,53 +1,67 @@
-import glob
-import os.path as osp
-import pandas as pd
-from pathlib import Path
-from PIL import Image
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
+from .datasets.federated_dataset_jt.federated_dataset_jt import FederatedDataset
 
-class CarlaDrivingDataset(Dataset):
-    def __init__(self, data_dir: str, transform=[]):
-        self.image_list = glob.glob(osp.join(data_dir, 'images/*.jpg'))
-        self.log_file = pd.read_csv(glob.glob(osp.join(data_dir, 'log.csv'))[0])
-        self.transform = transforms.Compose(transform)
+
+class DrivingDataset(Dataset):
+    def __init__(
+            self,
+            train_or_test: str,
+            av2_cities: list = None,
+            av2_root: str = None,
+            ns_cities: list = None,
+            wm_cities: list = None,
+            train_portion: float = 0.8,
+        ) -> None:
+        super().__init__()
+        self.dataset = FederatedDataset(
+            av2_cities=av2_cities,
+            av2_root='{}/{}'.format(av2_root, train_or_test.lower()),
+            ns_cities=ns_cities,
+            ns_train_test=train_or_test.upper(),
+            wm_cities=wm_cities,
+            waymo_train_test=train_or_test.upper(),
+            waymo_p=train_portion,
+            ns_train_proportion=train_portion,
+        )
+        self.transform = transforms.Compose([
+            transforms.Resize((32, 32), antialias=True),
+            # transforms.ToTensor(),
+        ])
 
     def __len__(self):
-        return len(self.image_list)
-
-    def __getitem__(self, index):
-        image_path = self.image_list[index]
-        image = Image.open(image_path)
-        image = self.transform(image)
-        frame_id = Path(image_path).stem
-        drive_command = self._get_one_hot_command(frame_id)
-        return image, drive_command
+        return len(self.dataset)
     
-    def _get_one_hot_command(self, frame_id):
-        log_at_frame = self.log_file.loc[self.log_file['frame'] == int(frame_id)]
-        steer = log_at_frame['steer'].values[0] if len(log_at_frame) > 0 else 0
-        throttle = log_at_frame['throttle'].values[0] if len(log_at_frame) > 0 else 0
-        brake = log_at_frame['brake'].values[0] if len(log_at_frame) > 0 else 0
-        longitudinal = throttle + brake * -1
-        if steer > .1:
-            return torch.tensor([1., 0., 0., 0.]) # right
-        elif steer < -.1:
-            return torch.tensor([0., 1., 0., 0.]) # left
-        elif longitudinal > 0:
-            return torch.tensor([0., 0., 1., 0.]) # forward
+    def __getitem__(self, idx):
+        bgr_image, rgb_image_path_list, waypoints, command, speed, city_id = self.dataset[idx]
+        rgb_image = bgr_image[[2, 1, 0], :, :]
+        rgb_image = self.transform(rgb_image)
+        one_hot_command = self._get_one_hot_command(command)
+        return rgb_image.float(), one_hot_command.float()
+    
+    def _get_one_hot_command(self, command):
+        if command == 1:
+            return torch.tensor([1, 0, 0]) # left
+        elif command == 2:
+            return torch.tensor([0, 1, 0]) # forward
         else:
-            return torch.tensor([0., 0., 0., 1.]) # stop
+            return torch.tensor([0, 0, 1]) # right
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     import argparse
-    parser = argparse.ArgumentParser(description="Carla Dataset")
-    parser.add_argument("--data_dir", type=str)
+    parser = argparse.ArgumentParser(description="Driving dataset")
+    parser.add_argument("--data", type=str)
     args = parser.parse_args()
-    dataset = CarlaDrivingDataset(args.data_dir, transform=[transforms.ToTensor()])
+    dataset = DrivingDataset(
+        train_or_test="train",
+        av2_cities=["ATX"],
+        av2_root=args.data,
+    )
+    print('len(dataset): ', len(dataset))
     dataloader = DataLoader(dataset, batch_size=1)
     iterator = iter(dataloader)
     X, y = next(iterator)
