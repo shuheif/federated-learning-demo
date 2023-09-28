@@ -36,7 +36,7 @@ class FederatedDataset():
         #         #                images_dir="/home/data/waymo_test")
         # else:
         #     self.waymo_dataset = None
-        self.waymo_dataset
+        self.waymo_dataset = None
 
 
 
