@@ -1,7 +1,6 @@
 from pytorch_lightning import LightningDataModule
 from torch import manual_seed
 from torch.utils.data import DataLoader, random_split
-from torchvision import transforms
 
 from dataset import DrivingDataset
 
