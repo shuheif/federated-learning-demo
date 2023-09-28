@@ -13,6 +13,7 @@ class DrivingDataset(Dataset):
             train_or_test: str,
             av2_cities: list = None,
             av2_root: str = None,
+            ns_root: str = None,
             ns_cities: list = None,
             wm_cities: list = None,
             train_portion: float = 0.8,
@@ -21,6 +22,7 @@ class DrivingDataset(Dataset):
         self.dataset = FederatedDataset(
             av2_cities=av2_cities,
             av2_root=av2_root,
+            ns_root=ns_root,
             ns_cities=ns_cities,
             ns_train_test=train_or_test.upper(),
             wm_cities=wm_cities,
@@ -57,12 +59,12 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Driving dataset")
     parser.add_argument("--data", type=str)
+    parser.add_argument("--city", type=str)
     args = parser.parse_args()
     dataset = DrivingDataset(
         train_or_test="train",
-        av2_cities=["PIT", "ATX"],
-        av2_root=args.data,
-        ns_cities=None,
+        ns_root=args.data,
+        ns_cities=[args.city],
     )
     print('len(dataset): ', len(dataset))
     dataloader = DataLoader(dataset, batch_size=1)

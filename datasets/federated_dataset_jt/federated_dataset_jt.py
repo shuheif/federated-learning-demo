@@ -2,7 +2,7 @@ FEDREATED_DATASET_JT_VERSION="v0.1 beta"
 
 
 # from nuscenes_dataset_jt import NuScenesDataset
-# from .nuscenes_dataset_jt import NuScenesDataset
+from .nuscenes_dataset_jt import NuScenesDataset
 from .av2_dataset_jt import AV2Dataset
 from .crop_and_resize import crop_car_and_resize, crop_central_and_resize
 
@@ -16,13 +16,12 @@ class FederatedDataset():
         else:
             self.av2_dataset=None
 
-        # if ns_cities is not None:
-        #     self.set_nuscenes(cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
-        #     # self.set_nuscenes(cities=ns_cities, train_or_test=ns_train_test, train_proportion=0.1)
-        #     print("FederatedDataset: There are", len(self.nuscenes_dataset), " ns samples overall. ")
-        # else:
-        #     self.nuscenes_dataset = None
-        self.nuscenes_dataset = None
+        if ns_cities is not None:
+            self.set_nuscenes(cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
+            # self.set_nuscenes(cities=ns_cities, train_or_test=ns_train_test, train_proportion=0.1)
+            print("FederatedDataset: There are", len(self.nuscenes_dataset), " ns samples overall. ")
+        else:
+            self.nuscenes_dataset = None
 
         # if wm_cities is not None:
         #     if waymo_train_test == 'TRAIN':
@@ -37,9 +36,6 @@ class FederatedDataset():
         # else:
         #     self.waymo_dataset = None
         self.waymo_dataset = None
-
-
-
         print("FederatedDataset: There are", self.__len__(), "samples overall. ")
 
     def set_av2(self,cities,crop_and_resize=None, dataset_dir="/data/shared/av2_all/train",proportion=1.0):

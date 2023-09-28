@@ -54,7 +54,7 @@ for scene in NUSCENES.scene:
 
 
 class NuScenesDataset(Dataset):
-    def __init__(self,cities=None,random_seed=99,train_proportion=1.0,train_or_test=TRAIN, cityid_map = None):
+    def __init__(self,data='/data/jimuyang/nuscenes/',cities=None,random_seed=99,train_proportion=1.0,train_or_test=TRAIN, cityid_map = None):
         
 
         '''
@@ -86,7 +86,7 @@ class NuScenesDataset(Dataset):
         print("NuScenesDataset:",NUSCENES_DATASET_JT_VERSION)
         
         gap=5
-        self.dataset_path = '/data/jimuyang/nuscenes/'
+        self.dataset_path = data #'/data/jimuyang/nuscenes/'
         
 
         '''
