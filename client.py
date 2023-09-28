@@ -1,5 +1,5 @@
 from flwr.client import NumPyClient, start_numpy_client
-from pytorch_lightning import Trainer, LightningModule, LightningDataModule
+from pytorch_lightning import Trainer, LightningModule, LightningDataModule, loggers
 from collections import OrderedDict
 import torch
 import numpy as np
@@ -21,6 +21,7 @@ class FlowerClient(NumPyClient):
         self.model = model
         self.train_loader, self.val_loader, self.test_loader = data_module.get_data_loaders()
         self.client_id = client_id
+        self.logger = loggers.TensorBoardLogger(save_dir="lightning_logs/client{}".format(client_id))
 
     def get_parameters(self, config: Dict) -> List[np.ndarray]:
         print(f"[Client ID {self.client_id}] get_parameters")
@@ -29,7 +30,7 @@ class FlowerClient(NumPyClient):
     def fit(self, parameters, config: Dict):
         print(f"[Client ID {self.client_id}] fit")
         self.set_parameters(parameters)
-        trainer = Trainer(max_epochs=1, accelerator="auto", enable_model_summary=False)
+        trainer = Trainer(max_epochs=10, accelerator="auto", enable_model_summary=False, log_every_n_steps=1, logger=self.logger)
         trainer.fit(self.model, self.train_loader, self.val_loader)
         metrics = trainer.callback_metrics
         return self.get_parameters(config), len(self.train_loader.dataset), {"accuracy": metrics['val_accuracy'].item()}
@@ -37,7 +38,7 @@ class FlowerClient(NumPyClient):
     def evaluate(self, parameters: List[np.ndarray], config: Dict):
         print(f"[Client {self.client_id}] evaluate")
         self.set_parameters(parameters)
-        trainer = Trainer(enable_model_summary=False)
+        trainer = Trainer(enable_model_summary=False, logger=self.logger)
         results = trainer.test(self.model, self.test_loader)
         loss = results[0]["test_loss"] if len(results) > 0 else np.nan
         accuracy = results[0]["test_accuracy"] if len(results) > 0 else np.nan
