@@ -10,6 +10,7 @@ class DrivingDataModule(LightningDataModule):
             self,
             batch_size: int,
             data_dir: str,
+            city: str=["PIT", "ATX"],
             test_ratio: float=.1,
             val_ratio: float=.2,
             num_workers: int=4,
@@ -19,6 +20,7 @@ class DrivingDataModule(LightningDataModule):
         super().__init__()
         self.batch_size = batch_size
         self.data_dir = data_dir
+        self.cities = [city]
         self.test_ratio = test_ratio
         self.val_ratio = val_ratio
         self.num_workers = num_workers
@@ -28,7 +30,7 @@ class DrivingDataModule(LightningDataModule):
     def setup(self):
         full_dataset = DrivingDataset(
             train_or_test="train",
-            av2_cities=["PIT", "ATX"],
+            av2_cities=self.cities,
             av2_root=self.data_dir,
         )
         total_size = len(full_dataset)
