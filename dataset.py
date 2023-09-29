@@ -63,8 +63,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dataset = DrivingDataset(
         train_or_test="train",
-        ns_root=args.data,
-        ns_cities=[args.city],
+        av2_root=args.data,
+        av2_cities=[args.city],
     )
     print('len(dataset): ', len(dataset))
     dataloader = DataLoader(dataset, batch_size=1)
