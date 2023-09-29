@@ -1,4 +1,5 @@
 from pytorch_lightning import LightningModule, Trainer
+import torch
 from torch import optim, nn
 from torchvision.models import resnet18, ResNet18_Weights
 
@@ -22,16 +23,27 @@ class ResNetClassifier(LightningModule):
         preds = self.resnet(images)
         loss = self.loss_module(preds, labels)
         acc = accuracy(preds, labels)
+        distance = self._calc_distance()
         if stage:
             self.log(f"{stage}_loss", loss, prog_bar=True)
             self.log(f"{stage}_accuracy", acc[0], prog_bar=True)
+            self.log(f"{stage}_diversity", distance, prog_bar=True)
         return loss
-    
+
+    def _calc_distance(self):
+        init_model = ResNetClassifier.load_from_checkpoint('./init_weights_ep4.ckpt').to(self.device)
+        avgs = []
+        for init_tensor, curr_tensor in zip(init_model.resnet.parameters(), self.resnet.parameters()):
+            distance_tensor = nn.functional.pairwise_distance(init_tensor, curr_tensor)
+            avgs.append(torch.mean(distance_tensor))
+        return sum(avgs) / len(avgs)
+
     def training_step(self, batch, batch_idx):
         return self._evaluate(batch, "train")
     
     def test_step(self, batch, batch_idx) -> None:
-        self._evaluate(batch, "test")
+        pass
+        # self._evaluate(batch, "test")
     
     def validation_step(self, batch, batch_idx) -> None:
         self._evaluate(batch, "val")
@@ -50,6 +62,6 @@ if __name__ == "__main__":
     data_module.setup()
     train_loader, val_loader, test_loader = data_module.get_data_loaders()
     model = ResNetClassifier(weights=ResNet18_Weights.DEFAULT)
-    trainer = Trainer(max_epochs=1, fast_dev_run=True, accelerator="auto")
+    trainer = Trainer(max_epochs=5, fast_dev_run=False, accelerator="auto")
     trainer.fit(model, train_loader, val_loader)
     trainer.test(model=model, dataloaders=test_loader)
