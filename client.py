@@ -30,7 +30,7 @@ class FlowerClient(NumPyClient):
     def fit(self, parameters, config: Dict):
         print(f"[Client ID {self.client_id}] fit")
         self.set_parameters(parameters)
-        trainer = Trainer(max_epochs=10, accelerator="auto", enable_model_summary=False, log_every_n_steps=1, logger=self.logger)
+        trainer = Trainer(max_epochs=10, accelerator="auto", enable_model_summary=False, logger=self.logger)
         trainer.fit(self.model, self.train_loader, self.val_loader)
         metrics = trainer.callback_metrics
         return self.get_parameters(config), len(self.train_loader.dataset), {"accuracy": metrics['val_accuracy'].item()}
