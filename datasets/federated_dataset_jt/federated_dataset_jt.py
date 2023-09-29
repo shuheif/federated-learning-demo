@@ -2,7 +2,7 @@ FEDREATED_DATASET_JT_VERSION="v0.1 beta"
 
 
 # from nuscenes_dataset_jt import NuScenesDataset
-from .nuscenes_dataset_jt import NuScenesDataset
+# from .nuscenes_dataset_jt import NuScenesDataset
 from .av2_dataset_jt import AV2Dataset
 from .crop_and_resize import crop_car_and_resize, crop_central_and_resize
 
@@ -16,12 +16,13 @@ class FederatedDataset():
         else:
             self.av2_dataset=None
 
-        if ns_cities is not None:
-            self.set_nuscenes(data=ns_root, cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
-            # self.set_nuscenes(cities=ns_cities, train_or_test=ns_train_test, train_proportion=0.1)
-            print("FederatedDataset: There are", len(self.nuscenes_dataset), " ns samples overall. ")
-        else:
-            self.nuscenes_dataset = None
+        # if ns_cities is not None:
+        #     self.set_nuscenes(data=ns_root, cities=ns_cities,train_or_test=ns_train_test,train_proportion=ns_train_proportion)
+        #     # self.set_nuscenes(cities=ns_cities, train_or_test=ns_train_test, train_proportion=0.1)
+        #     print("FederatedDataset: There are", len(self.nuscenes_dataset), " ns samples overall. ")
+        # else:
+        #     self.nuscenes_dataset = None
+        self.nuscenes_dataset = None
 
         # if wm_cities is not None:
         #     if waymo_train_test == 'TRAIN':
@@ -90,35 +91,25 @@ class FederatedDataset():
         print("FederatedDataset: There are", self.__len__(), "samples overall. ")
 
     def __len__(self):
-        
-        
         length=0
         if self.av2_dataset is not None:
             length+=len(self.av2_dataset)
-        
         if self.nuscenes_dataset is not None:
             length+=len(self.nuscenes_dataset)
-
         if self.waymo_dataset is not None:
             length += len(self.waymo_dataset)
-        
         return length
 
-
     def __getitem__(self, index):
-
         if index < 0:
             index = index + self.__len__()
-
         if index < 0 or index >= self.__len__():
             raise Exception("Index", index, "out of range")
-
         if self.av2_dataset is not None:
             if index < len(self.av2_dataset):
                 return self.av2_dataset[index]
             else:
                 index = index - len(self.av2_dataset)
-
         if self.nuscenes_dataset is not None:
             if index < len(self.nuscenes_dataset):
                 return self.nuscenes_dataset[index]
@@ -130,9 +121,8 @@ class FederatedDataset():
                 return self.waymo_dataset[index]
             else:
                 index = index - len(self.waymo_dataset)
-        
+
         
 if __name__ == "__main__":
-
     datasets = FederatedDataset(av2_cities = ['PIT','WDC','MIA','ATX','PAO','DTW'] ,ns_cities=['BOS','SGP'],av2_root = "/data/shared/av2_all/mini_test")
     # av2_cities = None, ns_cities = None, av2_root = "/data/shared/av2_all/train"
