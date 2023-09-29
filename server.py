@@ -5,7 +5,7 @@ import torch
 import argparse
 from pathlib import Path
 import logging
-logger.logger.setLevel(logging.DEBUG)
+logger.logger.setLevel(logging.INFO)
 
 from train import ResNetClassifier
 
