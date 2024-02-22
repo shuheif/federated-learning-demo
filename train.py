@@ -31,7 +31,7 @@ class ResNetClassifier(LightningModule):
         return loss
 
     def _calc_distance(self):
-        init_model = ResNetClassifier.load_from_checkpoint('./init_weights_ep4.ckpt').to(self.device)
+        init_model = ResNetClassifier.load_from_checkpoint('./init_weights.ckpt').to(self.device)
         avgs = []
         for init_tensor, curr_tensor in zip(init_model.resnet.parameters(), self.resnet.parameters()):
             distance_tensor = nn.functional.pairwise_distance(init_tensor, curr_tensor)
