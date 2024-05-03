@@ -42,8 +42,7 @@ class ResNetClassifier(LightningModule):
         return self._evaluate(batch, "train")
     
     def test_step(self, batch, batch_idx) -> None:
-        pass
-        # self._evaluate(batch, "test")
+        self._evaluate(batch, "test")
     
     def validation_step(self, batch, batch_idx) -> None:
         self._evaluate(batch, "val")
